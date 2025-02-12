@@ -65,8 +65,8 @@ public class JitsiMeet extends CordovaPlugin {
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         if (action.equals("startConference")) {
             jitsiCallbackContext = callbackContext;
-              if (ContextCompat.checkSelfPermission(cordova.getActivity(), Manifest.permission.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(cordova.getActivity(), new String[]{Manifest.permission.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION}, PERMISSION_CODE);
+              if (ContextCompat.checkSelfPermission(cordova.getActivity(), Manifest.permission.PROJECT_MEDIA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(cordova.getActivity(), new String[]{Manifest.permission.PROJECT_MEDIA}, PERMISSION_CODE);
         } else {
             JitsiMeet.startConference(cordova.getContext(), args.getJSONObject(0));
         }
