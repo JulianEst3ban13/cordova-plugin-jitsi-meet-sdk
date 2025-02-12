@@ -25,6 +25,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
 
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
+
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import org.apache.cordova.CordovaWebView;
