@@ -1,68 +1,84 @@
 # cordova-plugin-jitsi-meet-sdk
-Original plugin (https://github.com/Zeno97/cordova-plugin-jitsi-meet-sdk) has backward compatibility issues because it uses an outdated version of jitsi-sdk. (3.+ is too old). 
-Cordova plugin for Jitsi Meet React Native SDK: https://jitsi.github.io/handbook/docs/dev-guide/dev-guide-mobile/ Mobile SDK 4.0.0 is out and contains some backwards incompatible changes, check the release notes (24 Feb 2023). 
-Updated dependencies in the file `build-extras.gradle` so that the latest major version of SDK will be pulled. 
 
-## Warning
-For the plugin to work properly with the latest version, you need to update the `cordova-android` version to `11`, since sdk requires target version 32 and higher. After update you should append the next lines in your config.xml files:
+Cordova plugin for Jitsi Meet SDK with **16 KB page size support** (Google Play compliant).
 
-```
-        <resource-file src="res/android/ic_notification.png" target="app/src/main/res/drawable-ldpi/ic_notification.png" />
-        <resource-file src="res/android/ic_notification.png" target="app/src/main/res/drawable-mdpi/ic_notification.png" />
-        <resource-file src="res/android/ic_notification.png" target="app/src/main/res/drawable-hdpi/ic_notification.png" />
-        <resource-file src="res/android/ic_notification.png" target="app/src/main/res/drawable-xhdpi/ic_notification.png" />
+> **SDK Versions:** Android `12.1.3` | iOS `12.1.3`  
+> **Plugin Version:** `5.0.0`
 
-```
-These are notifications icons for library. Without these lines the plugin will not start correctly. 
-All options, feature flags and listeners are available. 
+---
 
-All feature flags available can be found here: https://github.com/jitsi/jitsi-meet/blob/master/react/features/base/flags/constants.js
+## Google Play 16 KB Page Size
 
-## Supported Platforms
-- __Android__ >= 23 
-- __iOS__
+Desde Agosto 2025, Google Play **requiere** que todas las apps soporten páginas de memoria de 16 KB. Esto significa que las librerías nativas (`.so`) deben estar alineadas a 16 KB. La versión anterior de este plugin (`4.x`) usaba el SDK `9.2.2` que incluía `duktape`, una librería **no compatible con 16 KB**.
 
-## Installation
-The plugin can be installed via Cordova-CLI
+Jitsi solucionó este problema en la versión **11.5.1** del SDK (Septiembre 2025), reemplazando `duktape` por `react-native-worklets-core`. Este plugin usa la versión **12.1.3** (Mayo 2026), que incluye ese fix y todas las mejoras acumuladas.
 
-Install the latest head version
-```
+> **Info:** [Plan detallado de migración a 16 KB](./PLAN_16KB_MIGRATION.md)  
+> **Referencia:** [CHANGELOG-MOBILE-SDKS.md](https://github.com/jitsi/jitsi-meet-release-notes/blob/master/CHANGELOG-MOBILE-SDKS.md)
+
+---
+
+## Requisitos
+
+| Requisito | Mínimo | Notas |
+|---|---|---|
+| **cordova CLI** | >= 12.0.0 | |
+| **cordova-android** | >= 12.0.0 | Requerido para AGP 8.x y soporte 16 KB |
+| **cordova-ios** | >= 7.0.0 | |
+| **Android** | >= 8.0 (API 26) | El SDK 11.0.0+ requiere API 26 |
+| **iOS** | >= 15.1 | |
+
+---
+
+## Instalación
+
+```bash
 cordova plugin add https://github.com/vlad909/cordova-plugin-jitsi-meet-sdk.git
 ```
-## Changes
-`welcomePageEnabled: false` has removed. Now it's a feature flag "welcomepage.enabled" (look at example)
 
-## Usage
-All paramenters are optional except for room. You need to specify at least the room name.
+### Configuración obligatoria para Android
 
-- If serverURL is not specified by default is "https://meet.jit.si".
+Agrega el ícono de notificación en tu `config.xml` (requerido por el SDK):
 
-- All feature flags not specified are in their default value.
+```xml
+<platform name="android">
+    <resource-file src="res/android/ic_notification.png" target="app/src/main/res/drawable-ldpi/ic_notification.png" />
+    <resource-file src="res/android/ic_notification.png" target="app/src/main/res/drawable-mdpi/ic_notification.png" />
+    <resource-file src="res/android/ic_notification.png" target="app/src/main/res/drawable-hdpi/ic_notification.png" />
+    <resource-file src="res/android/ic_notification.png" target="app/src/main/res/drawable-xhdpi/ic_notification.png" />
+</platform>
+```
 
-- All boolean options by default are false.
+Sin estas líneas el plugin no iniciará correctamente.
 
-- All string options by default are empty.
+---
 
-This is the minimal setup to enter into a conference
+## Uso
+
+Todos los parámetros son opcionales excepto `room`.
+
+- Si `serverURL` no se especifica, por defecto es `https://meet.jit.si`
+- Los feature flags no especificados usan su valor por defecto
+- Las opciones booleanas por defecto son `false`
+
+### Ejemplo mínimo
+
 ```js
-JitsiMeet.startConference(
-{
-    room: "MyAmazingRoom",
+JitsiMeet.startConference({
+    room: "MyAmazingRoom"
 });
 ```
 
+### Ejemplo completo
 
-And this is a complete example
 ```js
-JitsiMeet.startConference(
-{
+JitsiMeet.startConference({
     serverURL: "https://meet.jit.si",
     room: "MyAmazingRoom",
     displayName: "Max!",
-    email: "max@amazingmax.it", // change it
+    email: "max@amazingmax.it",
     audioMuted: false,
     videoMuted: false,
-    welcomePageEnabled: false,
     subject: "My amazing name",
     audioOnly: false,
     //token: "your jwt token, if you have one",
@@ -72,7 +88,7 @@ JitsiMeet.startConference(
         "kick-out.enabled": true,
         "live-streaming.enabled": true,
         "pip.enabled": true,
-        "raise-hand.enabled":true,
+        "raise-hand.enabled": true,
         "recording.enabled": true,
         "video-share.enabled": true,
         "add-people.enabled": true,
@@ -80,103 +96,150 @@ JitsiMeet.startConference(
         "meeting-name.enabled": true,
         "meeting-password.enabled": true,
         "toolbox.alwaysVisible": true,
-	"welcomepage.enabled": true,
- 	"prejoinpage.enabled": true
+        "welcomepage.enabled": true,
+        "prejoinpage.enabled": true
     }
-}, function(listener){
-    // a listener has been fired!
+}, function(listener) {
     console.log(listener);
-    
-    switch(listener){
+
+    switch(listener) {
         case "CONFERENCE_JOINED":
-            //Broadcasted when a conference was joined.
+            // Conferencia iniciada
             break;
         case "CONFERENCE_TERMINATED":
-            //Broadcasted when the active conference ends, be it because of user choice or because of a failure.
+            // Conferencia terminada
             break;
         case "CONFERENCE_WILL_JOIN":
-            //Broadcasted before a conference is joined. 
+            // A punto de unirse
             break;
         case "AUDIO_MUTED_CHANGED":
-            //Broadcasted when audioMuted state changed
+            // Cambio de estado de audio
             break;
         case "VIDEO_MUTED_CHANGED":
-            //Broadcasted when videoMuted state changed
+            // Cambio de estado de video
             break;
         case "PARTICIPANT_JOINED":
-            //Broadcasted when a participant has joined the conference. 
+            // Participante se unió
             break;
         case "PARTICIPANT_LEFT":
-            //Broadcasted when a participant has joined the conference.
+            // Participante salió
             break;
         case "ENDPOINT_TEXT_MESSAGE_RECEIVED":
-            //Broadcasted when an endpoint text message is received. 
+            // Mensaje de texto recibido
             break;
-	case "PARTICIPANTS_INFO_RETRIEVED":
-	    //Broadcasted when a RETRIEVE_PARTICIPANTS_INFO action is called. 
+        case "PARTICIPANTS_INFO_RETRIEVED":
+            // Información de participantes
             break;
-	case "CHAT_MESSAGE_RECEIVED":
-	    //Broadcasted when a chat text message is received.
+        case "CHAT_MESSAGE_RECEIVED":
+            // Mensaje de chat recibido
             break;
-	case "CHAT_TOGGLED":
-	    //Broadcasted when the chat dialog is opened or closed.
+        case "CHAT_TOGGLED":
+            // Chat abierto/cerrado
             break;
     }
 });
 ```
 
-## Close the conference
+---
+
+## Cerrar conferencia
+
 ```js
-JitsiMeet.disposeConference(function(success){
-	console.log("You successfully closed your conference!");
-},function(error){
-	console.log("Something goes wrong. Check tab error in the console");
-	console.error(error);
+JitsiMeet.disposeConference(function(success) {
+    console.log("Conferencia cerrada correctamente");
+}, function(error) {
+    console.error(error);
 });
 ```
 
-## Supported events
+---
+
+## Eventos soportados
 
 ### CONFERENCE_JOINED
-Broadcasted when a conference was joined. The data HashMap contains a url key with the conference URL.
+Se emite cuando se une a una conferencia.
 
 ### CONFERENCE_TERMINATED
-Broadcasted when the active conference ends, be it because of user choice or because of a failure. The data HashMap contains an error key with the error and a url key with the conference URL. If the conference finished gracefully no error key will be present.
+Se emite cuando la conferencia termina (por el usuario o por error).
 
 ### CONFERENCE_WILL_JOIN
-Broadcasted before a conference is joined. The data HashMap contains a url key with the conference URL.
+Se emite antes de unirse a la conferencia.
 
 ### AUDIO_MUTED_CHANGED
-Broadcasted when audioMuted state changed. The data HashMap contains a muted key with state of the audioMuted for the localParticipant.
+Se emite cuando cambia el estado de mute del participante local.
 
 ### VIDEO_MUTED_CHANGED
-Broadcasted when videoMuted state changed. The data HashMap contains a muted key with state of the videoMuted for the localParticipant.
+Se emite cuando cambia el estado de video del participante local.
 
 ### PARTICIPANT_JOINED
-Broadcasted when a participant has joined the conference. The data HashMap contains information of the participant that has joined. Depending of whether the participant is the local one or not, some of them are present/missing. isLocal email name participantId
+Se emite cuando un participante se une a la conferencia.
 
 ### PARTICIPANT_LEFT
-Broadcasted when a participant has joined the conference. The data HashMap contains information of the participant that has left. Depending of whether the participant is the local one or not, some of them are present/missing. isLocal email name participantId
+Se emite cuando un participante abandona la conferencia.
 
 ### ENDPOINT_TEXT_MESSAGE_RECEIVED
-Broadcasted when an endpoint text message is received. The data HashMap contains a senderId key with the participantId of the sender and a message key with the content.
+Se emite cuando se recibe un mensaje de texto.
 
 ### PARTICIPANTS_INFO_RETRIEVED
-Broadcasted when a RETRIEVE_PARTICIPANTS_INFO action is called. The data HashMap contains a participantsInfo key with a list of participants information and a requestId key with the id that was sent in the RETRIEVE_PARTICIPANTS_INFO action.
+Se emite cuando se solicita información de participantes.
 
 ### CHAT_MESSAGE_RECEIVED
-Broadcasted when a chat text message is received. The data HashMap contains a senderId key with the participantId of the sender, a message key with the content, a isPrivate key with a boolean value and a timestamp key.
+Se emite cuando se recibe un mensaje de chat.
 
 ### CHAT_TOGGLED
-Broadcasted when the chat dialog is opened or closed. The data HashMap contains a isOpen key with a boolean value.
+Se emite cuando el chat se abre o se cierra.
+
+---
 
 ## Broadcasting Actions
-Working in progress...
+
+_En desarrollo..._
+
+---
+
+## Migración desde v4.x a v5.0.0
+
+Si vienes de la versión anterior del plugin, estos son los cambios:
+
+### Cambios en el plugin
+
+| Aspecto | v4.x | v5.0.0 |
+|---------|------|--------|
+| Android SDK | `9.2.2` | `12.1.3` |
+| iOS SDK | `11.2.4` | `12.1.3` |
+| Android mínimo | API 24 | API 26 |
+| Soporte 16 KB | No | Si |
+
+### Cambios en tu proyecto Cordova
+
+| Requisito | v4.x | v5.0.0 |
+|-----------|------|--------|
+| cordova-android | >= 11 | **>= 12** |
+| cordova CLI | >= 10 | **>= 12** |
+| compileSdkVersion | 32 | **35** |
+| targetSdkVersion | 32 | **35** |
+
+### API del plugin
+
+La API JavaScript (`startConference`, `disposeConference`, eventos) **no cambió**. Tu código existente debería funcionar sin modificaciones.
+
+---
+
+## Feature Flags
+
+Todos los feature flags disponibles:  
+https://github.com/jitsi/jitsi-meet/blob/master/react/features/base/flags/constants.js
+
+---
 
 ## Issues
-The plugin will receive updates and fixes. Write in the Issues section for any problem.
 
-## I am looking Freelance work!
-You can email me at maxcoppola97@libero.it
+Reporta problemas en: https://github.com/vlad909/cordova-plugin-jitsi-meet-sdk/issues
 
-### Thanks!
+---
+
+## Créditos
+
+- Plugin original por [Massimiliano Coppola](https://github.com/Zeno97)
+- Mantenido por [@vlad909](https://github.com/vlad909)
+- Email: maxcoppola97@libero.it
